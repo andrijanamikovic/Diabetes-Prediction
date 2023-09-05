@@ -156,15 +156,6 @@ axes[1].set_ylabel('Фреквенција')
 
 # plt.show()
 
-# Data splitting
-X = data.drop('Дијабетес', axis=1)
-Y = data['Дијабетес']
-
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
-
-print(X_train.shape, X_test.shape)
-
-
 # Data encoding
 def encode_gender(label):
     if label == 'Женски':
@@ -186,11 +177,16 @@ def encode_smoking(label):
         return 4
 
 
-X_train['Пол'] = X_train['Пол'].apply(encode_gender)
-X_test['Пол'] = X_test['Пол'].apply(encode_gender)
+data['Пол'] = data['Пол'].apply(encode_gender)
+data['Историја-пушења'] = data['Историја-пушења'].apply(encode_smoking)
 
-X_train['Историја-пушења'] = X_train['Историја-пушења'].apply(encode_smoking)
-X_test['Историја-пушења'] = X_test['Историја-пушења'].apply(encode_smoking)
+# Data splitting
+X = data.drop('Дијабетес', axis=1)
+Y = data['Дијабетес']
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
+
+print(X_train.shape, X_test.shape)
 
 # print(X_train.head())
 # print(X_test.head())
@@ -198,10 +194,21 @@ X_test['Историја-пушења'] = X_test['Историја-пушења'
 
 plt.figure(figsize=(10, 6))
 plt.title('Корелација између атрибута')
-ax = sns.heatmap(X_train.corr(), annot=True, cmap='Pastel1', fmt='.2f', linewidths=0.2)
+ax = sns.heatmap(X_train.corr(), annot=True, cmap='tab20c', fmt='.2f', linewidths=0.2)
 ax.set_xticklabels(ax.get_xticklabels(), fontsize=10)
 ax.set_yticklabels(ax.get_yticklabels(), fontsize=10)
 plt.xticks(rotation=15)
+
+corr = data.corr()
+target_corr = corr['Дијабетес'].drop('Дијабетес')
+target_corr_sorted = target_corr.sort_values(ascending=False)
+
+plt.figure(figsize=(10, 6))
+sns.set(font_scale=0.8)
+sns.set_style("white")
+sns.set_palette("PuBuGn_d")
+sns.heatmap(target_corr_sorted.to_frame(), cmap="tab20c", annot=True, fmt='.2f')
+plt.title('Корелација са дијабетесом')
 
 X_train.drop(columns=['Пол', 'Историја-пушења', 'Болести-срца'], inplace=True)
 X_test.drop(columns=['Пол', 'Историја-пушења', 'Болести-срца'], inplace=True)
