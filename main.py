@@ -154,6 +154,15 @@ axes[1].set_title('Дистрибуција нивоа глукозе у пац�
 axes[1].set_xlabel('Ниво-глукозе')
 axes[1].set_ylabel('Фреквенција')
 
+#Dijabetes
+labels = ['Без дијабетеса', 'Са дијабетесом']
+diabetes_counts = data['Дијабетес'].value_counts()
+diabetes_percentage = diabetes_counts / len(data) * 100
+plt.figure(figsize=(10, 5))
+plt.pie(diabetes_percentage, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors,
+            textprops={'fontsize': 10})
+plt.title('Неуравнотежност података', fontsize=12)
+
 # plt.show()
 
 # Data encoding
