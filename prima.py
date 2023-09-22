@@ -24,19 +24,18 @@ data.rename(columns=translate_dict_columns, inplace=True)
 data['Пол'] = data['Пол'].replace(translate_dict_gender)
 data['Историја-пушења'] = data['Историја-пушења'].replace(translate_dict_smoking)
 
+prima = pd.read_csv('data/prima.csv')
+prima.info()
+print(prima.head())
+
+
 diabetes_data = data[data['Дијабетес'] == 1]
 no_diabetes_data = data[data['Дијабетес'] == 0]
 print(len(diabetes_data))
 print(len(no_diabetes_data))
 no_diabetes_data_random = no_diabetes_data.sample(11000, random_state=42)
-no_diabetes_data_random2 = no_diabetes_data.sample(17000, random_state=42)
-
 data_merged = pd.concat([no_diabetes_data_random, diabetes_data], axis=0)
 data_merged = data_merged.sample(frac=1, random_state=42)
-
-data = pd.concat([no_diabetes_data_random2, diabetes_data], axis=0)
-data = data.sample(frac=1, random_state=42)
-
 
 diabetes_data = data_merged[data_merged['Дијабетес'] == 1]
 no_diabetes_data = data_merged[data_merged['Дијабетес'] == 0]
@@ -48,46 +47,6 @@ X = data_merged.drop('Дијабетес', axis=1)
 Y = data_merged['Дијабетес']
 X1 = data.drop('Дијабетес', axis=1)
 Y1 = data['Дијабетес']
-
-min = X['Године'].min()
-max = X['Године'].max()
-
-X['Године'] = (X['Године'] - min) / (max - min)
-
-min = X['Индекс-телесне-масе'].min()
-max = X['Индекс-телесне-масе'].max()
-
-X['Индекс-телесне-масе'] = (X['Индекс-телесне-масе'] - min) / (max - min)
-
-min = X['HbA1c-ниво'].min()
-max = X['HbA1c-ниво'].max()
-
-X['HbA1c-ниво'] = (X['HbA1c-ниво'] - min) / (max - min)
-
-min = X['Ниво-глукозе'].min()
-max = X['Ниво-глукозе'].max()
-
-X['Ниво-глукозе'] = (X['Ниво-глукозе'] - min) / (max - min)
-
-min = X1['Године'].min()
-max = X1['Године'].max()
-
-X1['Године'] = (X1['Године'] - min) / (max - min)
-
-min = X1['Индекс-телесне-масе'].min()
-max = X1['Индекс-телесне-масе'].max()
-
-X1['Индекс-телесне-масе'] = (X1['Индекс-телесне-масе'] - min) / (max - min)
-
-min = X1['HbA1c-ниво'].min()
-max = X1['HbA1c-ниво'].max()
-
-X1['HbA1c-ниво'] = (X1['HbA1c-ниво'] - min) / (max - min)
-
-min = X1['Ниво-глукозе'].min()
-max = X1['Ниво-глукозе'].max()
-
-X1['Ниво-глукозе'] = (X1['Ниво-глукозе'] - min) / (max - min)
 
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
 X1_train, X1_test, Y1_train, Y1_test = train_test_split(X1, Y1, test_size=0.3, random_state=42)
@@ -137,8 +96,8 @@ X1_train.drop(columns=['Пол', 'Историја-пушења'], inplace=True)
 X1_test.drop(columns=['Пол', 'Историја-пушења'], inplace=True)
 
 adasyn = ADASYN(sampling_strategy='auto', random_state=42)
-X_train_resampled, y_train_resampled = adasyn.fit_resample(X1_train, Y1_train) #KOMBINACIJI
-X1_train_resampled, y1_train_resampled = adasyn.fit_resample(X_train, Y_train) #CELA
+X_train_resampled, y_train_resampled = adasyn.fit_resample(X1_train, Y1_train)
+X1_train_resampled, y1_train_resampled = adasyn.fit_resample(X_train, Y_train)
 
 print(X_train_resampled.shape)
 print(y_train_resampled.shape)
@@ -171,17 +130,17 @@ def logistical_regression():
     print(classification_report(Y_test, y_pred))
 
 def knn_algoritham():
-    knn = KNeighborsClassifier(n_neighbors=11)
+    knn = KNeighborsClassifier(n_neighbors=7)
     knn.fit(X1_train_resampled, y1_train_resampled)
     algorithm_name.append('КНН')
    # algorithm_score.append(ceil(knn.score(X_test, Y_test)*100))
-    y_pred = knn.predict(X1_test)
-    algorithm_score.append(accuracy_score(Y1_test, y_pred)*100)
-    print(classification_report(Y1_test, y_pred))
+    y_pred = knn.predict(X_test)
+    algorithm_score.append(accuracy_score(Y_test, y_pred)*100)
+    print(classification_report(Y_test, y_pred))
 
 def decision_tree():
     dtree = DecisionTreeClassifier()
-    dtree.fit(X1_train_resampled, y1_train_resampled)
+    dtree.fit(X_train_resampled, y_train_resampled)
     algorithm_name.append('Стабло одлучивања')
    # algorithm_score.append(ceil(dtree.score(X_test, Y_test)*100))
     y_pred = dtree.predict(X1_test)
@@ -189,15 +148,15 @@ def decision_tree():
     print(classification_report(Y1_test, y_pred))
 
 
-knn_algotiham_plot()
-print("Logisticka regresija: ")
-logistical_regression()
-print ("Knn algoritam: ")
-knn_algoritham()
-print("Stablo odlucivanja: ")
-decision_tree()
+#knn_algotiham_plot()
+#print("Logisticka regresija: ")
+#logistical_regression()
+#print ("Knn algoritam: ")
+#knn_algoritham()
+#print("Stablo odlucivanja: ")
+#decision_tree()
 
-print(algorithm_score)
+#print(algorithm_score)
 
 plt.figure(figsize=(10, 5))
 plt.bar(algorithm_name, algorithm_score, color='#87CEEB')

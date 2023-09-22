@@ -40,19 +40,17 @@ print(data.head())
 
 # Pol
 gender_to_include = ['Женски', 'Мушки']
-plt.figure(figsize=(5, 3))
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 sns.set(font_scale=2)
-sns.countplot(x='Пол', data=data, palette=colors, order=gender_to_include)
-plt.ylabel('Број')
-plt.title("Родне карактеристике")
+sns.countplot(x='Пол', data=data, palette=colors, order=gender_to_include, ax=axes[0])
+axes[0].set_ylabel('Број')
+axes[0].set_title("Сви пацијенти")
 # plt.show()
 
-
-plt.figure(figsize=(5, 3))
 sns.set(font_scale=2)
-sns.countplot(x='Пол', data=diabetes_data, palette=colors)
-plt.title("Заступљеност пацијената са дијабетесом на основу пола")
-plt.ylabel('Број')
+sns.countplot(x='Пол', data=diabetes_data, palette=colors, ax=axes[1])
+axes[1].set_title("Пацијенти са дијабетесом")
+axes[1].set_ylabel('Број')
 # plt.show()
 
 # Samo godine
@@ -64,11 +62,12 @@ plt.ylabel('Број')
 
 # Godine
 plt.figure(figsize=(5, 3))
-plt.hist(data['Године'], color='#87CEEB', label='Сви')
+plt.hist(data['Године'], color='#87CEEB', label='Сви пацијенти')
 plt.hist(diabetes_data['Године'], color='#f28500', label='Са дијабетесом')
 plt.title('Дистрибуција година и приказ заступљености дијабетеса у различитим узрастима')
 plt.xlabel('Године')
 plt.ylabel('Фреквенција')
+plt.legend(loc='upper right')
 
 # Hipertenzija
 
@@ -95,7 +94,7 @@ axes[1].pie(hypertension_percentage, labels=labels, autopct='%1.1f%%', startangl
 axes[1].set_title('Проценат пацијената са хипертензијом, а без дијабетеса', fontsize=12)
 
 # Bolesti-srca
-labels = ['Са болестима срца', 'Здраво срце']
+labels = ['Здраво срце', 'Са болестима срца']
 hear_disease_counts = diabetes_data['Болести-срца'].value_counts()
 hear_disease_percentage = hear_disease_counts / len(diabetes_data) * 100
 fig, axes = plt.subplots(1, 2, figsize=(10, 5))
@@ -120,12 +119,12 @@ plt.ylabel('Проценат пацијената са дијабетесом')
 # BMI
 
 plt.figure(figsize=(5, 3))
-plt.hist(data['Индекс-телесне-масе'], color='#87CEEB', label='Сви')
+plt.hist(data['Индекс-телесне-масе'], color='#87CEEB', label='Сви пацијенти')
 plt.hist(diabetes_data['Индекс-телесне-масе'], color='#f28500', label='Са дијабетесом')
 plt.title('Дистрибуција индекса телесне масе и приказ заступљености дијабетеса')
 plt.xlabel('Индекс-телесне-масе')
 plt.ylabel('Фреквенција')
-
+plt.legend(loc='upper right')
 # Hb1Ac to moram drugacije
 fig, axes = plt.subplots(1, 2, figsize=(15, 5))
 fig.subplots_adjust(wspace=0.3)
@@ -189,6 +188,30 @@ def encode_smoking(label):
 data['Пол'] = data['Пол'].apply(encode_gender)
 data['Историја-пушења'] = data['Историја-пушења'].apply(encode_smoking)
 
+#skaliranje
+min = data['Године'].min()
+max = data['Године'].max()
+
+data['Године'] = (data['Године'] - min) / (max - min)
+
+min = data['Индекс-телесне-масе'].min()
+max = data['Индекс-телесне-масе'].max()
+
+data['Индекс-телесне-масе'] = (data['Индекс-телесне-масе'] - min) / (max - min)
+
+min = data['HbA1c-ниво'].min()
+max = data['HbA1c-ниво'].max()
+
+data['HbA1c-ниво'] = (data['HbA1c-ниво'] - min) / (max - min)
+
+min = data['Ниво-глукозе'].min()
+max = data['Ниво-глукозе'].max()
+
+data['Ниво-глукозе'] = (data['Ниво-глукозе'] - min) / (max - min)
+
+print(data)
+
+
 # Data splitting
 X = data.drop('Дијабетес', axis=1)
 Y = data['Дијабетес']
@@ -230,14 +253,14 @@ algorithm_name = []
 algorithm_score = []
 def knn_algotiham_plot():
     knn_score_list = []
-    for k in range(1, 20, 1):
+    for k in range(2, 20, 1):
         knn = KNeighborsClassifier(n_neighbors=k)
         knn.fit(X_train, Y_train)  # ubaci u model
         prediction = knn.predict(X_test)
         knn_score_list.append(knn.score(X_test, Y_test))
 
     plt.figure(figsize=(10, 6))
-    plt.plot(range(1, 20, 1), knn_score_list, color='blue', linestyle='dashed', marker='o',
+    plt.plot(range(2, 20, 1), knn_score_list, color='blue', linestyle='dashed', marker='o',
              markerfacecolor='green', markersize=10)
     plt.title('Прецизност КНН алгоритма за различите вредности параметра')
     plt.xlabel('K')
@@ -254,7 +277,7 @@ def logistical_regression():
     print(classification_report(Y_test, y_pred))
 
 def knn_algoritham():
-    knn = KNeighborsClassifier(n_neighbors=4)
+    knn = KNeighborsClassifier(n_neighbors=9)
     knn.fit(X_train, Y_train)
     algorithm_name.append('КНН')
    # algorithm_score.append(ceil(knn.score(X_test, Y_test)*100))
@@ -272,7 +295,7 @@ def decision_tree():
     print(classification_report(Y_test, y_pred))
 
 
-#knn_algotiham_plot()
+knn_algotiham_plot()
 print("Logisticka regresija: ")
 logistical_regression()
 print ("Knn algoritam: ")
